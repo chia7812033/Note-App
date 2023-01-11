@@ -981,18 +981,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function App() {
-    /**
-     * Challenge:
-     * 1. Every time the `notes` array changes, save it
-     *    in localStorage. You'll need to use JSON.stringify()
-     *    to turn the array into a string to save in localStorage.
-     * 2. When the app first loads, initialize the notes state
-     *    with the notes saved in localStorage. You'll need to
-     *    use JSON.parse() to turn the stringified array back
-     *    into a real JS array.
-     */
-
-    var _React$useState = _react2.default.useState(JSON.parse(localStorage.getItem("notes")) || []),
+    var _React$useState = _react2.default.useState(function () {
+        return JSON.parse(localStorage.getItem("notes")) || [];
+    }),
         _React$useState2 = _slicedToArray(_React$useState, 2),
         notes = _React$useState2[0],
         setNotes = _React$useState2[1];
@@ -1019,10 +1010,24 @@ function App() {
 
     function updateNote(text) {
         setNotes(function (oldNotes) {
-            return oldNotes.map(function (oldNote) {
-                return oldNote.id === currentNoteId ? _extends({}, oldNote, { body: text }) : oldNote;
-            });
+            var newNotes = [];
+            for (var i = 0; i < oldNotes.length; i++) {
+                if (oldNotes[i].id === currentNoteId) {
+                    newNotes.unshift(_extends({}, oldNotes[i], { body: text }));
+                } else {
+                    newNotes.push(oldNotes[i]);
+                }
+            }
+            return newNotes;
         });
+    }
+
+    function deleteNote(event, noteId) {
+        event.stopPropagation();
+        var newNotes = notes.filter(function (note) {
+            return note.id != noteId;
+        });
+        setNotes(newNotes);
     }
 
     function findCurrentNote() {
@@ -1045,7 +1050,8 @@ function App() {
                 notes: notes,
                 currentNote: findCurrentNote(),
                 setCurrentNoteId: setCurrentNoteId,
-                newNote: createNewNote
+                newNote: createNewNote,
+                deleteNote: deleteNote
             }),
             currentNoteId && notes.length > 0 && _react2.default.createElement(_Editor2.default, {
                 currentNote: findCurrentNote(),
@@ -1214,8 +1220,17 @@ function Sidebar(props) {
                 _react2.default.createElement(
                     "h4",
                     { className: "text-snippet" },
-                    "Note ",
-                    index + 1
+                    note.body.split("\n")[0]
+                ),
+                _react2.default.createElement(
+                    "button",
+                    {
+                        className: "delete-btn",
+                        onClick: function onClick(event) {
+                            return props.deleteNote(event, note.id);
+                        }
+                    },
+                    _react2.default.createElement("i", { className: "gg-trash trash-icon" })
                 )
             )
         );

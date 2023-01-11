@@ -1,4 +1,4 @@
-# N
+# Note App
 
 Quick start:
 
